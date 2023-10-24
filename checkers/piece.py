@@ -9,7 +9,7 @@ class Piece:
         self.row = row
         self.col = col
         self.colour = colour
-        self.king = False
+        self.king = True
         self.x = 0
         self.y = 0
         self.calc_pos()
@@ -19,8 +19,6 @@ class Piece:
             self.direction = 1
         else:
             self.direction = -1
-
-
 
 
     def calc_pos(self):
@@ -35,7 +33,12 @@ class Piece:
         pygame.draw.circle(win, GREY, (self.x, self.y), radius + self.OUTLINE)
         pygame.draw.circle(win, self.colour, (self.x, self.y), radius)
         if self.king:
-            win.blit(CROWN, (self.x - CROWN.get_width()))
+            win.blit(CROWN, (self.x - CROWN.get_width()//2, self.y - CROWN.get_height()//2))
+
+    def move(self, row, col):
+        self.row = row
+        self.col = col
+        self.calc_pos()
 
 
     def __repr__(self):

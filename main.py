@@ -12,6 +12,9 @@ def main():
     run = True
     clock = pygame.time.Clock()
     board = Board()
+
+    piece = board.get_piece(0, 1)
+    board.move(piece, 5, 4)
     while run:
         clock.tick(FPS)
         pass
@@ -21,7 +24,11 @@ def main():
                 run = False
 
             if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:  # Left mouse button
+                    x, y = event.pos
+                    print("Left mouse button clicked at (x, y):", x, y)
                 pass
+
 
         board.draw(WIN)
         pygame.display.update()
