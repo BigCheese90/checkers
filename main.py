@@ -26,6 +26,21 @@ def main():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:  # Left mouse button
                     x, y = event.pos
+                    if board.selected_piece == None:
+                        board.select_piece(x, y)
+                    else:
+                        piece = board.selected_piece
+                        board.move(piece, x, y, coordinates=True)
+                if event.button == 2:
+                    x, y = event.pos
+
+                    board.available_moves(x, y, coordinates=True)
+
+                if event.button == 3:
+                    if board.selected_piece != None:
+                        board.deselect()
+
+
                     print("Left mouse button clicked at (x, y):", x, y)
                 pass
 
