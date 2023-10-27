@@ -26,44 +26,17 @@ class Board:
             for col in range(row % 2, ROWS, 2):
                 pygame.draw.rect(win, RED, (row*SQUARE_SIZE, col*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
 
-    def move(self, piece, row, col, coordinates=False):
-        endturn = True
-        if coordinates:
-            row = row // (HEIGHT // ROWS)
-            col = col // (WIDTH // COLS)
-            row, col = col, row
-        if [row, col] in piece.available_moves:
-            print("Move starts at ", piece.row, piece.col)
-            if abs(row - piece.row) == 2:
-                ic("kill", (row + piece.row) // 2, (col + piece.col) // 2)
-                self.capture((row + piece.row) // 2, (col + piece.col) // 2)
-                print("captured at ", (row + piece.row) // 2, (col + piece.col) // 2)
-                endturn = False
-            else:
-                ic(row, piece.row, "WHY")
+    def move(self, piece, row, col):
+        self.board[piece.row][piece.col], self.board[row][col] = self.board[row][col], self.board[piece.row][piece.col]
+        piece.move(row, col)
 
-            self.board[piece.row][piece.col], self.board[row][col] = self.board[row][col], self.board[piece.row][piece.col]
-            piece.move(row, col)
-            piece.available_moves = self.available_moves(row, col)
-            print("move to ", row, col)
-            if endturn == True or piece.available_moves == []:
-                print("turnover")
-                self.turnover()
-        else:
-            print("move impossible")
 
-        pass
 
-    def available_moves(self, row, col, coordinates = False):
 
-        if coordinates == True:
-            row = row // (HEIGHT // ROWS)
-            col = col // (WIDTH // COLS)
-            row, col = col, row
+    def available_moves(self, row, col, hit=False):
         piece = self.get_piece(row, col)
         colour = piece.colour
         if colour != self.turn:
-            print( colour, self.turn)
             return []
 
         if piece == 0:
@@ -127,31 +100,20 @@ class Board:
 
         return moves
 
-    def capture(self, row, col, coordinates=False):
-        if coordinates:
-             row = row // (HEIGHT // ROWS)
-             col = col // (WIDTH // COLS)
-             row, col = col, row
-
+    def capture(self, row, col):
         self.board[row][col] = 0
 
-    def deselect(self):
-        piece = self.selected_piece
-        piece.deselect()
-        self.selected_piece = None
 
-    def select_piece(self, x, y):
-        col = x // (HEIGHT // ROWS)
-        row = y // (WIDTH // COLS)
-        print(row , col, self.board[row][col])
-        piece = self.board[row][col]
 
-        if piece != 0:
-            piece.select()
-            piece.available_moves = self.available_moves(row, col)
-            print("available moves are: ", piece.available_moves)
-            self.selected_piece = piece
-        return piece
+    # def select_piece(self, row, col):
+    #     piece = self.board[row][col]
+    #
+    #     if piece != 0:
+    #         piece.select()
+    #         piece.available_moves = self.available_moves(row, col)
+    #         print("available moves are: ", piece.available_moves)
+    #         self.selected_piece = piece
+    #     return piece
 
     def get_piece(self, row,col):
         return self.board[row][col]

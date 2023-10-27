@@ -10,3 +10,10 @@ BLACK = (0, 0, 0)
 BLUE = (0, 0, 255)
 GREY = (128, 128, 128)
 CROWN = pygame.transform.scale(pygame.image.load("checkers/assets/crown.png"), (44,25))
+
+
+def transform_x_y(x,y):
+    row = x // (HEIGHT // ROWS)
+    col = y // (WIDTH // COLS)
+    row, col = col, row
+    return row, col

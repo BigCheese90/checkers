@@ -2,7 +2,7 @@ import pygame
 from checkers.constants import WIDTH, HEIGHT
 from checkers.board import Board
 from checkers.game import Game
-
+from checkers.constants import transform_x_y
 
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Checkers")
@@ -15,9 +15,17 @@ def main():
     clock = pygame.time.Clock()
     game = Game(WIN)
     board = game.board
+    print(game.list_of_moves())
+
+    i=0
+
 
     while run:
         clock.tick(FPS)
+        i+=1
+        if i % 6 == 1:
+            game.select_random_piece(game.list_of_moves())
+
         pass
 
         for event in pygame.event.get():
@@ -25,21 +33,23 @@ def main():
                 run = False
 
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:  # Left mouse button
-                    x, y = event.pos
-                    if board.selected_piece == None:
-                        board.select_piece(x, y)
-                    else:
-                        piece = board.selected_piece
-                        board.move(piece, x, y, coordinates=True)
-                if event.button == 2:
-                    x, y = event.pos
+                x, y = event.pos
+                row, col = transform_x_y(x, y)
 
-                    board.capture(x, y, coordinates=True)
+                if event.button == 1:  # Left mouse button
+                    if game.selected == None:
+                        game.select_piece(row, col)
+                    else:
+                        game.move(row, col)
+
+                if event.button == 2:
+                    board.capture(row, col)
 
                 if event.button == 3:
-                    if board.selected_piece != None:
-                        board.deselect()
+                    print("deselect")
+                    if game.selected != None:
+                        game.deselect()
+
 
 
                     print("Left mouse button clicked at (x, y):", x, y)
@@ -53,6 +63,9 @@ def main():
 
 
 main()
+
+
+
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
