@@ -10,6 +10,15 @@ class Board:
         self.red_left = self.white_left = 12
         self.red_kings = self.white_kings = 0
         self.create_board()
+        self.turn = RED
+
+    def turnover(self):
+        if self.turn == RED:
+            self.turn = WHITE
+        elif self.turn == WHITE:
+            self.turn = RED
+        pass
+
 
     def draw_squares(self, win):
         win.fill(BLACK)
@@ -18,46 +27,32 @@ class Board:
                 pygame.draw.rect(win, RED, (row*SQUARE_SIZE, col*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
 
     def move(self, piece, row, col, coordinates=False):
+        endturn = True
         if coordinates:
             row = row // (HEIGHT // ROWS)
             col = col // (WIDTH // COLS)
             row, col = col, row
-        print([row, col])
-        print(piece.available_moves)
         if [row, col] in piece.available_moves:
-            print("yeah", row, piece.row)
-            if row - piece.row == 2:
-                ic("kill", (row - piece.row) // 2, (col - piece.col) // 2)
-
+            print("Move starts at ", piece.row, piece.col)
+            if abs(row - piece.row) == 2:
+                ic("kill", (row + piece.row) // 2, (col + piece.col) // 2)
                 self.capture((row + piece.row) // 2, (col + piece.col) // 2)
+                print("captured at ", (row + piece.row) // 2, (col + piece.col) // 2)
+                endturn = False
+            else:
+                ic(row, piece.row, "WHY")
 
             self.board[piece.row][piece.col], self.board[row][col] = self.board[row][col], self.board[piece.row][piece.col]
-            piece.available_moves = self.available_moves(row, col)
             piece.move(row, col)
+            piece.available_moves = self.available_moves(row, col)
+            print("move to ", row, col)
+            if endturn == True or piece.available_moves == []:
+                print("turnover")
+                self.turnover()
         else:
             print("move impossible")
-        # print("coords are: ", col, row)
-        # if self.board[row][col] != 0:
-        #     print("Move to ", row, col, " not possible: ", "way blocked")
-        #
-        # elif piece.direction * piece.row <= piece.direction * row and not piece.king:
-        #     print("Move to ", row, col, " not possible: ", "wrong direction")
-        # elif (row + col) % 2 == 0:
-        #     print("Move on red Squares not allowed")
-        # elif abs(piece.row - row) > 1 or abs(piece.col - col) > 1:
-        #     print("cannot move that far")
-        #
-        #
-        # else:
-        #     self.board[piece.row][piece.col], self.board[row][col] = self.board[row][col], self.board[piece.row][piece.col]
-        #     piece.move(row, col)
-        #
-        # if row == ROWS-1 or row == 0:
-        #     piece.make_king()
-        #     if piece.colour == WHITE:
-        #         self.white_kings += 1
-        #     else:
-        #         self.red_kings += 1
+
+        pass
 
     def available_moves(self, row, col, coordinates = False):
 
@@ -66,41 +61,78 @@ class Board:
             col = col // (WIDTH // COLS)
             row, col = col, row
         piece = self.get_piece(row, col)
+        colour = piece.colour
+        if colour != self.turn:
+            print( colour, self.turn)
+            return []
+
         if piece == 0:
             print("no piece at position", row, col)
             return
-        moves = []
-        u = -1 * piece.direction
 
-        if self.board[row + u][col + 1] == 0 and 0 < row + u < 8 and 0 < col + 1 < 8:
-            moves.append([row + u, col + 1])
-        else:
-            if self.board[row + 2*u][col + 2] == 0 and 0 < row + 2*u < 8 and 0 < col + 2 < 8:
-                moves.append([row + 2*u, col + 2])
-        if self.board[row + u][col - 1] == 0 and 0 < row + u < 8 and 0 < col - 1 < 8:
-            moves.append([row + u, col - 1])
-        else:
-            if self.board[row + 2*u][col - 2] == 0 and 0 < row + 2*u < 8 and 0 < col - 2 < 8:
-                moves.append([row + 2*u, col - 2])
+        u = -1 * piece.direction
+        moves = []
+        if 0 <= col + 1 < 8 and 0 <= row + u < 8:
+            if self.board[row + u][col + 1] == 0:
+                moves.append([row + u, col + 1])
+            elif self.board[row + u][col + 1].colour != colour:
+                if 0 <= col + 2 < 8 and 0 <= row + 2*u < 8:
+                    if self.board[row + 2*u][col + 2] == 0:
+                        moves.append([row + 2*u, col + 2])
+
+        if 0 <= col - 1 <= 8 and 0 <= row + u < 8:
+            if self.board[row + u][col - 1] == 0:
+                moves.append([row + u, col - 1])
+
+            elif self.board[row + u][col - 1].colour != colour:
+                if 0 <= col - 2 < 8 and 0 <= row + 2*u < 8:
+                    if self.board[row + 2*u][col - 2] == 0:
+                        moves.append([row + 2*u, col - 2])
+
         if piece.king:
-            if self.board[row - u][col + 1] == 0 and 0 < row - u < 8 and 0 < col + 1 < 8:
-                moves.append([row - u, col + 1])
-            else:
-                if self.board[row - 2 * u][col + 2] == 0 and 0 < row - 2*u < 8 and 0 < col - 2 < 8:
-                    moves.append([row - 2 * u, col + 2])
-            if self.board[row - u][col - 1] == 0 and 0 < row - u < 8 and 0 < col - 1 < 8:
-                moves.append([row - u, col - 1])
-            else:
-                if self.board[row - 2 * u][col - 2] == 0 and 0 < row - 2*u < 8 and 0 < col - 2 < 8:
-                    moves.append([row - 2 * u, col - 2])
+            u = u *-1
+            if 0 <= col + 1 < 8 and 0 <= row + u < 8:
+                if self.board[row + u][col + 1] == 0:
+                    moves.append([row + u, col + 1])
+                elif self.board[row + u][col + 1].colour != colour:
+                    if 0 <= col + 2 < 8 and 0 <= row + 2*u < 8:
+                        if self.board[row + 2*u][col + 2] == 0:
+                            moves.append([row + 2*u, col + 2])
+
+            if 0 <= col - 1 <= 8 and 0 <= row + u < 8:
+                if self.board[row + u][col - 1] == 0:
+                    moves.append([row + u, col - 1])
+
+                elif self.board[row + u][col - 1].colour != colour:
+                    if 0 <= col - 2 < 8 and 0 <= row + 2*u < 8:
+                        if self.board[row + 2*u][col - 2] == 0:
+                            moves.append([row + 2*u, col - 2])
+
+        # if self.board[row + u][col - 1] == 0 and 0 < row + u < 8 and 0 < col - 1 < 8:
+        #     moves.append([row + u, col - 1])
+        # else:
+        #     if self.board[row + 2*u][col - 2] == 0 and 0 < row + 2*u < 8 and 0 < col - 2 < 8:
+        #         moves.append([row + 2*u, col - 2])
+        # if piece.king:
+        #     if self.board[row - u][col + 1] == 0 and 0 < row - u < 8 and 0 < col + 1 < 8:
+        #         moves.append([row - u, col + 1])
+        #     else:
+        #         if self.board[row - 2 * u][col + 2] == 0 and 0 < row - 2*u < 8 and 0 < col - 2 < 8:
+        #             moves.append([row - 2 * u, col + 2])
+        #     if self.board[row - u][col - 1] == 0 and 0 < row - u < 8 and 0 < col - 1 < 8:
+        #         moves.append([row - u, col - 1])
+        #     else:
+        #         if self.board[row - 2 * u][col - 2] == 0 and 0 < row - 2*u < 8 and 0 < col - 2 < 8:
+        #             moves.append([row - 2 * u, col - 2])
 
         return moves
 
     def capture(self, row, col, coordinates=False):
-        # if coordinates:
-        #     row = row // (HEIGHT // ROWS)
-        #     col = col // (WIDTH // COLS)
-        #     row, col = col, row
+        if coordinates:
+             row = row // (HEIGHT // ROWS)
+             col = col // (WIDTH // COLS)
+             row, col = col, row
+
         self.board[row][col] = 0
 
     def deselect(self):
