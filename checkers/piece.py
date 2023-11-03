@@ -50,8 +50,6 @@ class Piece:
         self.row = row
         self.col = col
         self.calc_pos()
-        if row == 7 or row == 0:
-            self.make_king()
 
 
     def __repr__(self):

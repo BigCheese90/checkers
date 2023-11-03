@@ -3,6 +3,8 @@ from checkers.constants import WIDTH, HEIGHT
 from checkers.board import Board
 from checkers.game import Game
 from checkers.constants import transform_x_y
+from checkers.algorithm import *
+
 
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Checkers")
@@ -15,7 +17,7 @@ def main():
     clock = pygame.time.Clock()
     game = Game(WIN)
     board = game.board
-    print(game.list_of_moves())
+    print(dict_of_moves(game))
 
     i=0
 
@@ -24,10 +26,15 @@ def main():
         clock.tick(FPS)
         i+=1
         if i % 6 == 1:
-            game.select_random_piece(game.list_of_moves())
+            move_random_piece(game, dict_of_moves(game))
 
         pass
 
+        if i % 60 == 1:
+            print(board.white_left)
+            print(board.red_left)
+            print(board.red_kings)
+            print(board.white_kings)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False

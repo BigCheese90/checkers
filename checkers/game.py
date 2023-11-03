@@ -25,7 +25,7 @@ class Game:
         if piece != 0:
             piece.select()
             self.selected = piece
-            piece.available_moves = self.available_moves(row, col)
+            piece.available_moves = self.board.available_moves(row, col)
             print("available moves are: ", piece.available_moves)
         return
 
@@ -44,8 +44,6 @@ class Game:
                 print("Move starts at ", piece.row, piece.col)
 
                 if abs(row - piece.row) == 2:
-                    self.capture((row + piece.row) // 2, (col + piece.col) // 2)
-                    print("captured at ", (row + piece.row) // 2, (col + piece.col) // 2)
                     self.board.move(self.selected, row, col)
                     piece.available_moves = self.available_moves(row, col, hit=True)
                     if piece.available_moves == []:
@@ -129,7 +127,7 @@ class Game:
 
 
 
-    def list_of_moves(self):
+    def dict_of_moves(self):
         list = []
         for row in self.board.board:
             for piece in row:
@@ -138,7 +136,7 @@ class Game:
                         list.append(piece)#, self.available_moves(piece.row, piece.col)])
         return list
 
-    def select_random_piece(self, list_of_pieces):
+    def select_random_piece(self, dict_of_moves):
         piece = random.choice(list_of_pieces)
         self.select_piece(piece.row, piece.col)
         move = random.choice(piece.available_moves)

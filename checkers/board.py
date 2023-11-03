@@ -2,6 +2,8 @@ import pygame
 from .constants import BLACK, ROWS, RED, SQUARE_SIZE, COLS, WHITE, HEIGHT, WIDTH
 from .piece import Piece
 from icecream import ic
+from typing import Dict, Any, Union, List
+
 
 class Board:
     def __init__(self):
@@ -19,23 +21,71 @@ class Board:
             self.turn = RED
         pass
 
+    def check_game_state(self):
+        return self.red_left + self.red_kings - self.white_left - self.white_kings
 
     def draw_squares(self, win):
         win.fill(BLACK)
         for row in range(ROWS):
             for col in range(row % 2, ROWS, 2):
-                pygame.draw.rect(win, RED, (row*SQUARE_SIZE, col*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+                pygame.draw.rect(win, RED, (row * SQUARE_SIZE, col * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
 
-    def move(self, piece, row, col):
+    def move(self, piece, row, col, sim=False):
         self.board[piece.row][piece.col], self.board[row][col] = self.board[row][col], self.board[piece.row][piece.col]
-        piece.move(row, col)
+        print("move ", piece, "to" , row, col)
+        if abs(row - piece.row) == 2:
+            self.capture((row + piece.row) // 2, (col + piece.col) // 2)
+            piece.available_moves = self.available_moves(row, col, hit=True)
+            if piece.available_moves == []:
+                self.turnover()
+        else:
+            self.turnover()
+        if sim == False:
+            piece.move(row, col)
+        if (row == 7 or row == 0) and piece.king == False:
+            piece.make_king()
+            if piece.colour == RED:
+                self.red_kings = self.red_kings + 1
+
+            if piece.colour == WHITE:
+                self.white_kings = self.white_kings + 1
+
+    def get_pieces(self):
+        piece_list = []
+        for row in self.board:
+            for piece in row:
+                if piece != 0 and piece.colour == self.turn:
+                    piece_list.append(piece)
+        return piece_list
+
+    def dict_of_moves(self):
+        dict_of_moves = {}
+        for row in self.board:
+            for piece in row:
+                if piece != 0:
+                    if piece.colour == self.turn and self.available_moves(piece.row, piece.col) != []:
+                        dict_of_moves[piece] = self.available_moves(piece.row, piece.col)
+
+        return dict_of_moves
+
+    def list_of_moves(self):
+        list_of_moves = []
+        for row in self.board:
+            for piece in row:
+                if piece != 0:
+                    if piece.colour == self.turn and self.available_moves(piece.row, piece.col) != []:
+                        list_of_moves.append([[piece.row, piece.col], self.available_moves(piece.row, piece.col)])
 
 
-
+        return list_of_moves
 
     def available_moves(self, row, col, hit=False):
         piece = self.get_piece(row, col)
-        colour = piece.colour
+        try:
+            colour = piece.colour
+        except:
+            print("error")
+            print(piece, row, col)
         if colour != self.turn:
             return []
 
@@ -49,61 +99,52 @@ class Board:
             if self.board[row + u][col + 1] == 0:
                 moves.append([row + u, col + 1])
             elif self.board[row + u][col + 1].colour != colour:
-                if 0 <= col + 2 < 8 and 0 <= row + 2*u < 8:
-                    if self.board[row + 2*u][col + 2] == 0:
-                        moves.append([row + 2*u, col + 2])
+                if 0 <= col + 2 < 8 and 0 <= row + 2 * u < 8:
+                    if self.board[row + 2 * u][col + 2] == 0:
+                        moves.append([row + 2 * u, col + 2])
 
         if 0 <= col - 1 <= 8 and 0 <= row + u < 8:
             if self.board[row + u][col - 1] == 0:
                 moves.append([row + u, col - 1])
 
             elif self.board[row + u][col - 1].colour != colour:
-                if 0 <= col - 2 < 8 and 0 <= row + 2*u < 8:
-                    if self.board[row + 2*u][col - 2] == 0:
-                        moves.append([row + 2*u, col - 2])
+                if 0 <= col - 2 < 8 and 0 <= row + 2 * u < 8:
+                    if self.board[row + 2 * u][col - 2] == 0:
+                        moves.append([row + 2 * u, col - 2])
 
         if piece.king:
-            u = u *-1
+            u = u * -1
             if 0 <= col + 1 < 8 and 0 <= row + u < 8:
                 if self.board[row + u][col + 1] == 0:
                     moves.append([row + u, col + 1])
                 elif self.board[row + u][col + 1].colour != colour:
-                    if 0 <= col + 2 < 8 and 0 <= row + 2*u < 8:
-                        if self.board[row + 2*u][col + 2] == 0:
-                            moves.append([row + 2*u, col + 2])
+                    if 0 <= col + 2 < 8 and 0 <= row + 2 * u < 8:
+                        if self.board[row + 2 * u][col + 2] == 0:
+                            moves.append([row + 2 * u, col + 2])
 
             if 0 <= col - 1 <= 8 and 0 <= row + u < 8:
                 if self.board[row + u][col - 1] == 0:
                     moves.append([row + u, col - 1])
 
                 elif self.board[row + u][col - 1].colour != colour:
-                    if 0 <= col - 2 < 8 and 0 <= row + 2*u < 8:
-                        if self.board[row + 2*u][col - 2] == 0:
-                            moves.append([row + 2*u, col - 2])
-
-        # if self.board[row + u][col - 1] == 0 and 0 < row + u < 8 and 0 < col - 1 < 8:
-        #     moves.append([row + u, col - 1])
-        # else:
-        #     if self.board[row + 2*u][col - 2] == 0 and 0 < row + 2*u < 8 and 0 < col - 2 < 8:
-        #         moves.append([row + 2*u, col - 2])
-        # if piece.king:
-        #     if self.board[row - u][col + 1] == 0 and 0 < row - u < 8 and 0 < col + 1 < 8:
-        #         moves.append([row - u, col + 1])
-        #     else:
-        #         if self.board[row - 2 * u][col + 2] == 0 and 0 < row - 2*u < 8 and 0 < col - 2 < 8:
-        #             moves.append([row - 2 * u, col + 2])
-        #     if self.board[row - u][col - 1] == 0 and 0 < row - u < 8 and 0 < col - 1 < 8:
-        #         moves.append([row - u, col - 1])
-        #     else:
-        #         if self.board[row - 2 * u][col - 2] == 0 and 0 < row - 2*u < 8 and 0 < col - 2 < 8:
-        #             moves.append([row - 2 * u, col - 2])
+                    if 0 <= col - 2 < 8 and 0 <= row + 2 * u < 8:
+                        if self.board[row + 2 * u][col - 2] == 0:
+                            moves.append([row + 2 * u, col - 2])
 
         return moves
 
     def capture(self, row, col):
+        piece = self.board[row][col]
+        if piece.colour == RED:
+            self.red_left = self.red_left - 1
+            if piece.king:
+                self.red_kings = self.red_kings - 1
+        if piece.colour == WHITE:
+            self.white_left = self.white_left - 1
+            if piece.king:
+                self.white_kings = self.white_kings - 1
+
         self.board[row][col] = 0
-
-
 
     # def select_piece(self, row, col):
     #     piece = self.board[row][col]
@@ -115,9 +156,8 @@ class Board:
     #         self.selected_piece = piece
     #     return piece
 
-    def get_piece(self, row,col):
+    def get_piece(self, row, col):
         return self.board[row][col]
-
 
     def create_board(self):
         for row in range(ROWS):
@@ -132,7 +172,6 @@ class Board:
                         self.board[row].append(0)
                 else:
                     self.board[row].append(0)
-
 
     def draw(self, win):
         self.draw_squares(win)
