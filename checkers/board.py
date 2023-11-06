@@ -13,6 +13,7 @@ class Board:
         self.red_kings = self.white_kings = 0
         self.create_board()
         self.turn = RED
+        self.last_action = "Move"
 
     def turnover(self):
         if self.turn == RED:
@@ -38,6 +39,9 @@ class Board:
             piece.available_moves = self.available_moves(row, col, hit=True)
             if piece.available_moves == []:
                 self.turnover()
+                self.last_action = "Move"
+            else:
+                self.last_action = piece
         else:
             self.turnover()
         if sim == False:
@@ -70,12 +74,21 @@ class Board:
 
     def list_of_moves(self):
         list_of_moves = []
+        if self.last_action != "Move":
+            piece = self.last_action
+            moves = self.available_moves(piece.row, piece.col)
+            if piece.colour == self.turn and moves != []:
+                for i in moves:
+                    list_of_moves.append([[piece.row, piece.col], i])
+            return list_of_moves
+
         for row in self.board:
             for piece in row:
                 if piece != 0:
-                    if piece.colour == self.turn and self.available_moves(piece.row, piece.col) != []:
-                        list_of_moves.append([[piece.row, piece.col], self.available_moves(piece.row, piece.col)])
-
+                    moves = self.available_moves(piece.row, piece.col)
+                    if piece.colour == self.turn and moves != []:
+                        for i in moves:
+                            list_of_moves.append([[piece.row, piece.col], i])
 
         return list_of_moves
 
