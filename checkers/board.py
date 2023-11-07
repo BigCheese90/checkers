@@ -31,21 +31,21 @@ class Board:
             for col in range(row % 2, ROWS, 2):
                 pygame.draw.rect(win, RED, (row * SQUARE_SIZE, col * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
 
-    def move(self, piece, row, col, sim=False):
+    def move(self, piece, row, col):
         self.board[piece.row][piece.col], self.board[row][col] = self.board[row][col], self.board[piece.row][piece.col]
         print("move ", piece, "to" , row, col)
         if abs(row - piece.row) == 2:
             self.capture((row + piece.row) // 2, (col + piece.col) // 2)
-            piece.available_moves = self.available_moves(row, col, hit=True)
+            piece.move(row, col)
+            piece.available_moves = self.available_captures(row, col)
             if piece.available_moves == []:
                 self.turnover()
                 self.last_action = "Move"
             else:
                 self.last_action = piece
         else:
-            self.turnover()
-        if sim == False:
             piece.move(row, col)
+            self.turnover()
         if (row == 7 or row == 0) and piece.king == False:
             piece.make_king()
             if piece.colour == RED:
@@ -53,6 +53,7 @@ class Board:
 
             if piece.colour == WHITE:
                 self.white_kings = self.white_kings + 1
+
 
     def get_pieces(self):
         piece_list = []
@@ -92,8 +93,10 @@ class Board:
 
         return list_of_moves
 
-    def available_moves(self, row, col, hit=False):
+    def available_moves(self, row, col):
         piece = self.get_piece(row, col)
+        if piece == self.last_action:
+            return piece.available_moves
         try:
             colour = piece.colour
         except:
@@ -145,6 +148,34 @@ class Board:
                             moves.append([row + 2 * u, col - 2])
 
         return moves
+
+    def available_captures(self, row, col):
+        piece = self.get_piece(row, col)
+        colour = piece.colour
+        u = -1 * piece.direction
+        moves = []
+        if 0 <= col + 2 < 8 and 0 <= row + 2 * u < 8 and self.board[row + 2 * u][col + 2] == 0:
+            if self.board[row + u][col + 1] != 0 and self.board[row + u][col + 1].colour != colour:
+                moves.append([row + 2*u, col +2])
+
+        if 0 <= col - 2 < 8 and 0 <= row + 2 * u < 8 and self.board[row + 2 * u][col - 2] == 0:
+            if self.board[row + u][col - 1] != 0 and self.board[row + u][col - 1].colour != colour:
+                moves.append([row + 2 * u, col - 2])
+
+        if not piece.king:
+            return moves
+
+        u = u*-1
+        if 0 <= col + 2 < 8 and 0 <= row + 2 * u < 8 and self.board[row + 2 * u][col + 2] == 0:
+            if self.board[row + u][col + 1] != 0 and self.board[row + u][col + 1].colour != colour:
+                moves.append([row + 2*u, col +2])
+
+        if 0 <= col - 2 < 8 and 0 <= row + 2 * u < 8 and self.board[row + 2 * u][col - 2] == 0:
+            if self.board[row + u][col - 1] != 0 and self.board[row + u][col - 1].colour != colour:
+                moves.append([row + 2 * u, col - 2])
+
+        return moves
+
 
     def capture(self, row, col):
         piece = self.board[row][col]

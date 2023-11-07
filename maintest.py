@@ -13,7 +13,6 @@ FPS = 60
 
 game = Game(WIN)
 board = game.board
-board.turnover()
 
 def main():
     run = True
@@ -23,7 +22,7 @@ def main():
 
 
     while run:
-        clock.tick(FPS//60)
+        clock.tick(FPS//2)
         if game.board.turn == RED:
             best_move = minmax(board)
             print(best_move)
@@ -31,13 +30,13 @@ def main():
             board.move(board.get_piece(best_move[0][0], best_move[0][1]), best_move[1], best_move[2])
             #game.change_turn()
             pass
-        # else:
-        #     best_move = minmax(board)
-        #     print(best_move)
-        #     #board.move(board.board[5][0], 4, 1)
-        #     board.move(board.get_piece(best_move[0][0], best_move[0][1]), best_move[1], best_move[2])
-        #     #game.change_turn()
-        #     pass
+        else:
+            best_move = minmax(board)
+            print(best_move)
+            #board.move(board.board[5][0], 4, 1)
+            board.move(board.get_piece(best_move[0][0], best_move[0][1]), best_move[1], best_move[2])
+            #game.change_turn()
+            pass
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

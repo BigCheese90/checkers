@@ -23,7 +23,7 @@ def move_random_piece(game, dict_of_moves):
 
 #red wants to maximise game_state
 
-def findmax(board, start, move, colour):
+def findmax(board, start, move, colour, n):
     print("move is ", start, move)
     board = deepcopy(board)
     board.move(board.board[start[0]][start[1]], move[0], move[1])
