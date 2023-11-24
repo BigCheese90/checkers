@@ -24,19 +24,25 @@ def main():
     while run:
         clock.tick(FPS//2)
         if game.board.turn == RED:
-            best_move = minmax(board)
-            print(best_move)
-            #board.move(board.board[5][0], 4, 1)
-            board.move(board.get_piece(best_move[0][0], best_move[0][1]), best_move[1], best_move[2])
-            #game.change_turn()
+            eval, best_move = minimax_red(board, 2)
+
+            board.move(board.get_piece(best_move[0][0], best_move[0][1]), best_move[1][0], best_move[1][1])
             pass
-        else:
-            best_move = minmax(board)
-            print(best_move)
-            #board.move(board.board[5][0], 4, 1)
-            board.move(board.get_piece(best_move[0][0], best_move[0][1]), best_move[1], best_move[2])
-            #game.change_turn()
+
+        if game.board.turn == WHITE:
+            eval, best_move = minimax_white(board, 0)
+
+            board.move(board.get_piece(best_move[0][0], best_move[0][1]), best_move[1][0], best_move[1][1])
             pass
+        # best_move, eval = findmax_two(board, 1)
+        # board.move(board.get_piece(best_move[0][0], best_move[0][1]), best_move[1][0], best_move[1][1])
+        # else:
+        #     best_move = minmax(board)
+        #     print(best_move)
+        #     #board.move(board.board[5][0], 4, 1)
+        #     board.move(board.get_piece(best_move[0][0], best_move[0][1]), best_move[1], best_move[2])
+        #     #game.change_turn()
+        #     pass
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

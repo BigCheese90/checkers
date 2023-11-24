@@ -33,7 +33,7 @@ class Board:
 
     def move(self, piece, row, col):
         self.board[piece.row][piece.col], self.board[row][col] = self.board[row][col], self.board[piece.row][piece.col]
-        print("move ", piece, "to" , row, col)
+        #print("move ", piece, "to" , row, col)
         if abs(row - piece.row) == 2:
             self.capture((row + piece.row) // 2, (col + piece.col) // 2)
             piece.move(row, col)
@@ -146,6 +146,11 @@ class Board:
                     if 0 <= col - 2 < 8 and 0 <= row + 2 * u < 8:
                         if self.board[row + 2 * u][col - 2] == 0:
                             moves.append([row + 2 * u, col - 2])
+
+        if moves == [] and self.turn == RED:
+            self.red_left = self.red_kings = 0
+        if moves == [] and self.turn == WHITE:
+            self.white_left = self.white_kings = 0
 
         return moves
 

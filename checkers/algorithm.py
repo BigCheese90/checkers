@@ -86,5 +86,131 @@ def minmax(input_board):
 
 
 
+def find_opponent_move(board):
+    available_moves = board.list_of_moves()
+    if board.turn == WHITE:
+        maxEval = float("inf")
+        best_board = board
+        for move in available_moves:
+            start = move[0]
+            end = move[1]
+            tempboard = deepcopy(board)
+            tempboard.move(tempboard.board[start[0]][start[1]], end[0], end[1])
+            game_state = tempboard.check_game_state()
+            if game_state < maxEval:
+                best_board = tempboard
+
+    else:
+        maxEval = float("-inf")
+        best_board = board
+        for move in available_moves:
+            start = move[0]
+            end = move[1]
+            tempboard = deepcopy(board)
+            tempboard.move(tempboard.board[start[0]][start[1]], end[0], end[1])
+            game_state = tempboard.check_game_state()
+            if game_state > maxEval:
+                best_board = tempboard
+
+    return best_board
 
 
+def findmax_two(board, n=0):
+
+    if board.turn == RED:
+        available_moves = board.list_of_moves()
+        list_of_states = []
+        maxEval = float("-inf")
+        best_move = None
+
+        for moves in available_moves:
+            start = moves[0]
+            end = moves[1]
+            tempboard = deepcopy(board)
+            tempboard.move(tempboard.board[start[0]][start[1]], end[0], end[1])
+
+
+            if n > 0:
+                best_move, game_state = findmax_two(tempboard, n-1)
+            else:
+                game_state = tempboard.check_game_state()
+
+            if game_state > maxEval:
+                best_move = moves
+                maxEval = game_state
+                print(game_state, best_move)
+        return best_move, maxEval
+
+
+def minimax_red(board, n=0, maxEval = float("-inf")):
+
+    available_moves = board.list_of_moves()
+    best_move = None
+    best_score = float("-inf")
+    for move in available_moves:
+        start = move[0]
+        end = move[1]
+        tempboard = deepcopy(board)
+        tempboard.move(tempboard.board[start[0]][start[1]], end[0], end[1])
+        while True:
+            tempboard = find_opponent_move(tempboard)
+            if tempboard.turn == RED:
+                break
+
+        if n == 0:
+            game_state = tempboard.check_game_state()
+            if game_state > maxEval:
+                maxEval = game_state
+                best_move = move
+
+            #print(game_state)
+
+        else:
+            maxEval, best_moves = minimax_red(tempboard, n-1, maxEval)
+            # print("score: ", maxEval)
+            # print("move: ", move)
+            if maxEval > best_score:
+                best_score = maxEval
+                best_move = move
+
+
+    return maxEval, best_move
+
+def minimax_white(board, n=0, maxEval = float("+inf")):
+
+    available_moves = board.list_of_moves()
+    best_move = None
+    best_score = float("+inf")
+    for move in available_moves:
+        start = move[0]
+        end = move[1]
+        tempboard = deepcopy(board)
+        tempboard.move(tempboard.board[start[0]][start[1]], end[0], end[1])
+        while True:
+            tempboard = find_opponent_move(tempboard)
+            if tempboard.turn == WHITE:
+                break
+
+        if n == 0:
+            game_state = tempboard.check_game_state()
+            if game_state < maxEval:
+                maxEval = game_state
+                best_move = move
+
+            #print(game_state)
+
+        else:
+            maxEval, best_moves = minimax_white(tempboard, n-1, maxEval)
+            # print("score: ", maxEval)
+            # print("move: ", move)
+            if maxEval < best_score:
+                best_score = maxEval
+                best_move = move
+
+
+    return maxEval, best_move
+
+#print(find_all_moves(board))
+
+def minimax(board):
+    available_moves = board.list_of_moves()
